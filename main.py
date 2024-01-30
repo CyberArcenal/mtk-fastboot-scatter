@@ -13,15 +13,15 @@ from tabulate import tabulate
 
 def flash(path):
     print("[-] Generating partition table...")
-    partitions = parser.partition_list_generate(path)
-
+    scatter_content = parser.parse_scatter(path)
+    partitions = parser.partition_list_generate(scatter_content)
     print(warnings.aboutwarning)
 
     partitionsList = []
     for case in partitions:
         partitionsList.append([case, partitions[case]])
 
-    print(tabulate(partitionsList, headers = ['Partition', 'Image'], tablefmt = "fancy_grid"))
+    print(tabulate(partitionsList, headers=['Partition', 'Image'], tablefmt="fancy_grid"))
 
     print("[-] Flashing images...")
     for case in partitions:
@@ -33,3 +33,4 @@ if __name__ == "__main__":
         flash(sys.argv[1])
     else:
         print("[-] Please provide a path to the scatter file in the SP Flash package.")
+

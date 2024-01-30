@@ -15,20 +15,22 @@
 # Parse MTK scatterfile and generate a list of partitions
 
 import yaml
+from icecream import ic
+import re
 
 def parse_scatter(path):
     with open(path, "r") as f:
-        try:
-            scatter_dict = yaml.safe_load(f)
-            return scatter_dict
-        except yaml.YAMLError as exc:
-            print(exc)
+        scatter_content = f.read()
+        return scatter_content
 
-def partition_list_generate(path):
+def partition_list_generate(scatter_content):
     partitions = {}
-    scatter_dict = parse_scatter(path)
-    scatter_dict.pop(0)
-    for obj in scatter_dict:
-        if (obj['is_download'] == True):
-            partitions.update({obj['partition_name']: obj['file_name']})
+    partition_pattern = re.compile(r'-\s+partition_index:\s+(\w+).*?partition_name:\s+(\w+).*?file_name:\s+([^\n]+).*?is_download:\s+(\w+)', re.DOTALL)
+    matches = partition_pattern.findall(scatter_content)
+    
+    for match in matches:
+        partition_index, partition_name, file_name, is_download = match
+        if is_download.lower() == 'true':
+            partitions[partition_name] = file_name.strip()
+
     return partitions
