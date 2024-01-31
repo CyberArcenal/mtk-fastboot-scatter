@@ -27,7 +27,19 @@ def flash(path):
     for case in partitions:
         fastboot.flashPartition(case, partitions[case])
         print("[*] Flashed " + case + " successfully.")
-
+    p=input("Do you want to Wipe your device? [Y/n]")
+    
+    if p == "Y" or p == "y" or p[0] == "y":
+        fastboot.wipeDevice()
+    else:
+        print("Wipe device canselled.")
+        
+    p=input("Do you want to reboot your device? [Y/n]")
+    if p == "Y" or p == "y" or p[0] == "y":
+        fastboot.reboot()
+    else:
+        print("Reboot device canselled.")
+    print("\033[1;93m Finish.\033[1;97m")
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         flash(sys.argv[1])
