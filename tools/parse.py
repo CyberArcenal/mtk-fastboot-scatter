@@ -15,7 +15,6 @@
 # Parse MTK scatterfile and generate a list of partitions
 
 import yaml
-from icecream import ic
 import re
 
 def parse_scatter(path):
