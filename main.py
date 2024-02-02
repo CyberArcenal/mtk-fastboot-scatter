@@ -36,8 +36,13 @@ def flash(scatter_file, location):
     if check_file(partitions=partitions):
         print("\033[1;92m[-] Flashing images...")
         for case in partitions:
-            fastboot.flashPartition(partition=case, file=partitions[case])
-            print("[*] Flashed " + case + " successfully.")
+            # fastboot.flashPartition(partition=case, file=partitions[case])
+            # print("[*] Flashed " + case + " successfully.")
+            return_code = fastboot.flashPartition(partition=case, file=partitions[case])
+            if return_code == 0:
+                print(f"\033[1;92m[*] Flashed {case} successfully.\033[1;97m")
+            else:
+                print(f"\033[1;91m[*] Flashing {case} failed with return code: {return_code}\033[1;97m")
         
         print("\033[1;93m Finish.\033[1;97m")
     else:
