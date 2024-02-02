@@ -12,12 +12,12 @@
 # GNU General Public License for more details.
 #
 
-aboutwarning = """
+aboutwarning = """\033[1;93m
 This is a beta version of scatter-fastboot.
 It is not recommended to use this tool in production.
 It only works with unlocked bootloaders.
 
 This depends on a MediaTek build-env generated scatter file,
 that can come from an SP Flash Tool package for your device.
-Contact your OEM for details.
+Contact your OEM for details.\033[1;97m
 """

@@ -5,5 +5,5 @@ Code has been functionalized and tested on a few devices, but is not guaranteed 
 
 ### Usage:
 ```
-python3 main.py path/to/scatter.txt
+python3 main.py
 ```

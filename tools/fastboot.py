@@ -40,3 +40,20 @@ def rebootBootloader():
 def rebootFastboot():
     result = subprocess.run(['fastboot', 'reboot', 'fastboot'])
     return result.returncode
+
+def oemlock():
+    result = subprocess.run(['fastboot', 'oem', 'lock'])
+    return result.returncode
+
+def oemlock2():
+    result = subprocess.run(['fastboot', 'flashing', 'lock'])
+    return result.returncode
+
+def oemUnlock():
+    result = subprocess.run(['fastboot', 'flashing', 'unlock'])
+    return result
+
+def oemUnlock2():
+    result = subprocess.run(['fastboot', 'oem', 'unlock'])
+    return result
+
