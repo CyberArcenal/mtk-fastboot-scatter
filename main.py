@@ -21,32 +21,36 @@ line2=("\033[1;92m║"+58*"\033[1;92m═")
 
 
 def flash(scatter_file, location):
-    os.chdir(location)
-    print("\033[1;92m[-] Generating partition table...")
-    scatter_content = parser.parse_scatter(scatter_file)
-    partitions = parser.partition_list_generate(scatter_content)
-    print(warnings.aboutwarning)
+    try:
+        os.chdir(location)
+        print("\033[1;92m[-] Generating partition table...")
+        scatter_content = parser.parse_scatter(scatter_file)
+        partitions = parser.partition_list_generate(scatter_content)
+        print(warnings.aboutwarning)
 
-    partitionsList = []
-    for case in partitions:
-        partitionsList.append([case, partitions[case]])
-
-    print(tabulate(partitionsList, headers=['Partition', 'Image'], tablefmt="fancy_grid"))
-    
-    if check_file(partitions=partitions):
-        print("\033[1;92m[-] Flashing images...")
+        partitionsList = []
         for case in partitions:
-            # fastboot.flashPartition(partition=case, file=partitions[case])
-            # print("[*] Flashed " + case + " successfully.")
-            return_code = fastboot.flashPartition(partition=case, file=partitions[case])
-            if return_code == 0:
-                print(f"\033[1;92m[*] Flashed {case} successfully.\033[1;97m")
-            else:
-                print(f"\033[1;91m[*] Flashing {case} failed with return code: {return_code}\033[1;97m")
+            partitionsList.append([case, partitions[case]])
+
+        print(tabulate(partitionsList, headers=['Partition', 'Image'], tablefmt="fancy_grid"))
         
-        print("\033[1;93m Finish.\033[1;97m")
-    else:
-        menu()
+        if check_file(partitions=partitions):
+            print("\033[1;92m[-] Flashing images...")
+            for case in partitions:
+                # fastboot.flashPartition(partition=case, file=partitions[case])
+                # print("[*] Flashed " + case + " successfully.")
+                return_code = fastboot.flashPartition(partition=case, file=partitions[case])
+                if return_code == 0:
+                    print(f"\033[1;92m[*] Flashed {case} successfully.\033[1;97m")
+                else:
+                    print(f"\033[1;91m[*] Flashing {case} failed with return code: {return_code}\033[1;97m")
+            print(line)
+            input("\033[1;92m║ \033[1;93mFinish.\033[1;97m")
+            menu()
+        else:
+            menu()
+    except Exception as e:
+        print(f"\033[1;91m[Error] An unexpected error occurred: {e}\033[1;97m")
 
 def isYes():
     p = pick()
