@@ -14,17 +14,27 @@
 
 # This requires host fastboot to be installed
 
-import os
 import subprocess
 
+# Flashing commands
 def flashPartition(partition, file):
     result = subprocess.run(['fastboot', 'flash', partition, file])
     return result.returncode
 
+def erasePartition(partition):
+    result = subprocess.run(['fastboot', 'erase', partition])
+    return result.returncode
+
+# Wipe commands
 def wipeDevice():
     result = subprocess.run(['fastboot', '-w'])
     return result.returncode
 
+def eraseCache():
+    result = subprocess.run(['fastboot', 'erase', 'cache'])
+    return result.returncode
+
+# Reboot commands
 def reboot():
     result = subprocess.run(['fastboot', 'reboot'])
     return result.returncode
@@ -41,19 +51,26 @@ def rebootFastboot():
     result = subprocess.run(['fastboot', 'reboot', 'fastboot'])
     return result.returncode
 
-def oemlock():
+# Lock/Unlock bootloader commands
+def oemLock():
     result = subprocess.run(['fastboot', 'oem', 'lock'])
     return result.returncode
 
-def oemlock2():
+def oemUnlock():
+    result = subprocess.run(['fastboot', 'oem', 'unlock'])
+    return result.returncode
+
+def oemLock2():
     result = subprocess.run(['fastboot', 'flashing', 'lock'])
     return result.returncode
 
-def oemUnlock():
-    result = subprocess.run(['fastboot', 'flashing', 'unlock'])
-    return result
-
 def oemUnlock2():
-    result = subprocess.run(['fastboot', 'oem', 'unlock'])
-    return result
+    result = subprocess.run(['fastboot', 'flashing', 'unlock'])
+    return result.returncode
+
+def check_bootloader_status():
+    result = subprocess.run(['fastboot', 'getvar', 'unlocked'], capture_output=True, text=True)
+    output = result.stdout.strip().lower()
+    return "unlocked: yes" in output
+
 
