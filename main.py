@@ -191,6 +191,71 @@ def get_scatter_file():
     file_location = os.path.dirname(file)
     return file, file_location
 
+def get_slot():
+    print("\033[1;92m║ \033[1;97mPartition Slot")
+    print(
+        "\033[1;92m║ \033[1;91m1. \033[1;94m—> \033[1;92mA")
+    print(
+        "\033[1;92m║ \033[1;91m2. \033[1;94m—> \033[1;92mB")
+    p = pick()
+    if p == "1":
+        return "a"
+    elif p == "2":
+        return "b"
+    else:
+        input(f"Partition slot {p} is invalid")
+        menu()
+
+def slot_changer(partitions, partition_slot):
+    new_partitions = dict()
+    for partition_name in partitions:
+        if partition_name.endswith('_a') or partition_name.endswith('_b'):
+            new_partition_name = partition_name[:-2] + '_' + partition_slot
+        else:
+            new_partition_name = partition_name + "_" + partition_slot
+            
+        new_partitions[new_partition_name] = partitions[partition_name]
+    return new_partitions
+
+
+
+def flash_ab(scatter_file, location, partition_slot):
+    try:
+        os.chdir(location)
+        print("\033[1;92m[-] Generating partition table...")
+        scatter_content = parser.parse_scatter(scatter_file)
+        partitions = parser.partition_list_generate(scatter_content)
+        print(warnings.aboutwarning)
+        partitions = slot_changer(partitions=partitions, partition_slot=partition_slot)
+        partitionsList = []
+        for case in partitions:
+            partitionsList.append([case, partitions[case]])
+
+        print(tabulate(partitionsList, headers=[
+              'Partition', 'Image'], tablefmt="fancy_grid"))
+        a = input("\033[1;92m║ \033[1;93mContinue Flashing?[y/n].\033[1;97m")
+        if check_file(partitions=partitions) and a.lower() == "y":
+            print("\033[1;92m[-] Flashing images...")
+            for case in partitions:
+                # fastboot.flashPartition(partition=case, file=partitions[case])
+                # print("[*] Flashed " + case + " successfully.")
+                return_code = fastboot.flashPartition(
+                    partition=case, file=partitions[case])
+                if return_code == 0:
+                    print(
+                        f"\033[1;92m[*] Flashed {case} successfully.\033[1;97m")
+                else:
+                    print(
+                        f"\033[1;91m[*] Flashing {case} failed with return code: {return_code}\033[1;97m")
+            # Palitan ang default boot slot matapos ang flash
+            fastboot.change_boot_slot(partition_slot)
+            print(line)
+            input("\033[1;92m║ \033[1;93mFinish.\033[1;97m")
+            menu()
+        else:
+            menu()
+    except Exception as e:
+        print(f"\033[1;91m[Error] An unexpected error occurred: {e}\033[1;97m")
 
 def erase_partition():
     print("\033[1;92m║ \033[1;97mPartition Name:")
@@ -208,37 +273,46 @@ def menu_pick():
     if p == "1":
         scatter_file, location = get_scatter_file()
         flash(scatter_file=scatter_file, location=location)
-    elif p == "2":
-        unlock_bootloader()
+    if p == "2":
+        scatter_file, location = get_scatter_file()
+        slot = get_slot()
+        flash_ab(scatter_file=scatter_file, location=location, partition_slot=slot)
     elif p == "3":
-        unlock_bootloader2()
+        unlock_bootloader()
     elif p == "4":
-        lock_bootloader()
+        unlock_bootloader2()
     elif p == "5":
-        lock_bootloader2()
+        lock_bootloader()
     elif p == "6":
-        fastboot.rebootRecovery()
+        lock_bootloader2()
     elif p == "7":
-        fastboot.rebootFastboot()
+        fastboot.rebootRecovery()
     elif p == "8":
-        fastboot.rebootBootloader()
+        fastboot.rebootFastboot()
     elif p == "9":
-        erase_partition()
+        fastboot.rebootBootloader()
     elif p == "10":
+        erase_partition()
+    elif p == "11":
         if are_you_sure():
             fastboot.wipeDevice()
             input()
             menu()
         else:
             menu()
-    elif p == "11":
+    elif p == "12":
         if are_you_sure():
             fastboot.eraseCache()
             input()
             menu()
         else:
             menu()
-    elif p == "12":
+    elif p == "13":
+        slot = get_slot()
+        fastboot.change_boot_slot(slot=slot)
+        input("Back")
+        menu()
+    elif p == "14":
         fastboot.reboot()
     elif p == "00":
         os.system("git pull")
@@ -268,21 +342,23 @@ def menu():
     os.system(clr)
     print(line)
     print("\033[1;92m║ \033[1;91m1. \033[1;94m—> \033[1;92mFlash ROM[Scatter file]")
+    print("\033[1;92m║ \033[1;91m2. \033[1;94m—> \033[1;92mFlash ROM[Scatter file][A/B slot]")
     print(
-        "\033[1;92m║ \033[1;91m2. \033[1;94m—> \033[1;92mUnlock bootloader[Method 1]")
+        "\033[1;92m║ \033[1;91m3. \033[1;94m—> \033[1;92mUnlock bootloader[Method 1]")
     print(
-        "\033[1;92m║ \033[1;91m3. \033[1;94m—> \033[1;92mUnlock bootloader[Method 2]")
+        "\033[1;92m║ \033[1;91m4. \033[1;94m—> \033[1;92mUnlock bootloader[Method 2]")
     print(
-        "\033[1;92m║ \033[1;91m4. \033[1;94m—> \033[1;92mLock bootloader[Method 1]")
+        "\033[1;92m║ \033[1;91m5. \033[1;94m—> \033[1;92mLock bootloader[Method 1]")
     print(
-        "\033[1;92m║ \033[1;91m5. \033[1;94m—> \033[1;92mLock bootloader[Method 2]")
-    print("\033[1;92m║ \033[1;91m6. \033[1;94m—> \033[1;92mReboot Recovery")
-    print("\033[1;92m║ \033[1;91m7. \033[1;94m—> \033[1;92mReboot Fastboot")
-    print("\033[1;92m║ \033[1;91m8. \033[1;94m—> \033[1;92mReboot Bootloader")
-    print("\033[1;92m║ \033[1;91m9. \033[1;94m—> \033[1;92mErase Partition")
-    print("\033[1;92m║ \033[1;91m10. \033[1;94m—> \033[1;92mWipe device")
-    print("\033[1;92m║ \033[1;91m11. \033[1;94m—> \033[1;92mErase cache")
-    print("\033[1;92m║ \033[1;91m12. \033[1;94m—> \033[1;92mReboot")
+        "\033[1;92m║ \033[1;91m6. \033[1;94m—> \033[1;92mLock bootloader[Method 2]")
+    print("\033[1;92m║ \033[1;91m7. \033[1;94m—> \033[1;92mReboot Recovery")
+    print("\033[1;92m║ \033[1;91m8. \033[1;94m—> \033[1;92mReboot Fastboot")
+    print("\033[1;92m║ \033[1;91m9. \033[1;94m—> \033[1;92mReboot Bootloader")
+    print("\033[1;92m║ \033[1;91m10. \033[1;94m—> \033[1;92mErase Partition")
+    print("\033[1;92m║ \033[1;91m11. \033[1;94m—> \033[1;92mWipe device")
+    print("\033[1;92m║ \033[1;91m12. \033[1;94m—> \033[1;92mErase cache")
+    print("\033[1;92m║ \033[1;91m13. \033[1;94m—> \033[1;92mChange boot slot")
+    print("\033[1;92m║ \033[1;91m14. \033[1;94m—> \033[1;92mReboot")
     print("\033[1;92m║ \033[1;91m00. \033[1;94m—> \033[1;92mUpdate")
     print("\033[1;92m║ \033[1;91m0. \033[1;94m—> \033[1;93mExit")
     menu_pick()
