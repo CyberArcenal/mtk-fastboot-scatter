@@ -212,7 +212,7 @@ def slot_changer(partitions, partition_slot):
         if partition_name.endswith('_a') or partition_name.endswith('_b'):
             new_partition_name = partition_name[:-2] + '_' + partition_slot
         else:
-            new_partition_name = partition_name + "_" + partition_slot
+            new_partition_name = partition_name
             
         new_partitions[new_partition_name] = partitions[partition_name]
     return new_partitions
