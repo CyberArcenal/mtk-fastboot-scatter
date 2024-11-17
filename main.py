@@ -20,7 +20,56 @@ elif sys.platform == "win32" or sys.platform == "cygwin" or sys.platform == "msy
 line = ("\033[1;92m╔═"+57*"\033[1;92m═")
 line2 = ("\033[1;92m║"+58*"\033[1;92m═")
 
+def flash(scatter_file, location):
+    try:
+        os.chdir(location)
+        print("\033[1;92m[-] Generating partition table...")
+        scatter_content = parser.parse_scatter(scatter_file)
+        partitions = parser.partition_list_generate(scatter_content)
+        print(warnings.aboutwarning)
 
+        # Ask the user for flashing option
+        print("\033[1;92mChoose an option:")
+        print("\033[1;93m1. Upgrade (without user data)")
+        print("\033[1;93m2. Flash all (including user data)")
+        choice = input("\033[1;92mSelect [1/2]: \033[1;97m")
+
+        # Filter partitions based on user's choice
+        partitions_to_flash = {}
+        for case in partitions:
+            # If upgrading, exclude user data partition
+            if choice == "1" and "userdata" in case.lower():
+                continue
+            partitions_to_flash[case] = partitions[case]
+
+        # Display partitions to flash
+        partitionsList = []
+        for case in partitions_to_flash:
+            partitionsList.append([case, partitions_to_flash[case]])
+
+        print(tabulate(partitionsList, headers=['Partition', 'Image'], tablefmt="fancy_grid"))
+        
+        a = input("\033[1;92m║ \033[1;93mContinue Flashing? [y/n]: \033[1;97m")
+        if check_file(partitions=partitions_to_flash) and a.lower() == "y":
+            print("\033[1;92m[-] Flashing images...")
+            for case in partitions_to_flash:
+                return_code = fastboot.flashPartition(partition=case, file=partitions_to_flash[case])
+                if return_code == 0:
+                    print(f"\033[1;92m[*] Flashed {case} successfully.\033[1;97m")
+                else:
+                    print(f"\033[1;91m[*] Flashing {case} failed with return code: {return_code}\033[1;97m")
+            print(line)
+            input("\033[1;92m║ \033[1;93mFinish.\033[1;97m")
+            menu()
+        else:
+            menu()
+    except Exception as e:
+        print(f"\033[1;91m[Error] An unexpected error occurred: {e}\033[1;97m")
+
+
+
+
+"""
 def flash(scatter_file, location):
     try:
         os.chdir(location)
@@ -56,6 +105,7 @@ def flash(scatter_file, location):
             menu()
     except Exception as e:
         print(f"\033[1;91m[Error] An unexpected error occurred: {e}\033[1;97m")
+"""
 
 
 def isYes():
